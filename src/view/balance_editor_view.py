@@ -2,6 +2,7 @@ from src.controllers.interfaces.balance_editor import BalanceEditorInterface
 from src.view.http_types.http_request import HttpRequest
 from src.view.http_types.http_response import HttpResponse
 from .interfaces.view_interface import ViewInterface
+from src.errors.types.http_bad_request import HttpBadRequestError
 
 class BalanceEditorView(ViewInterface):
     def __init__(self, controller: BalanceEditorInterface)-> None:
@@ -14,7 +15,7 @@ class BalanceEditorView(ViewInterface):
         user_id = http_request.params.get("user_id")
         header_user_id = http_request.headers.get("uid")
 
-        self.__validate_input(new_balance, user_id)
+        self.__validate_input(new_balance, user_id, header_user_id)
         
         # Converte o new_balance para float antes de passar para o controller.
         # Isso garante que a requisição com o valor como string (ex: "150.00")
@@ -31,14 +32,14 @@ class BalanceEditorView(ViewInterface):
             or not user_id
             or int(header_user_id) != int(user_id)
         ):
-            raise Exception("Invalid input")
+            raise HttpBadRequestError("Invalid input")
 
         # Tenta converter o new_balance para float e trata a exceção
         # se a conversão não for possível (ex: se for uma string como "abc").
         try:
             float(new_balance)
         except (ValueError, TypeError):
-            raise Exception("Invalid input: new_balance must be a number")
+            raise HttpBadRequestError("Invalid input: new_balance must be a number")
 
         
         

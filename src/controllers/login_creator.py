@@ -1,6 +1,8 @@
 from src.models.interface.user_repository import UserRepositoryInterface
 from src.drivers.password_handler import PasswordHandler
 from src.drivers.jwt_handler import JwtHandler
+from src.errors.types.http_not_found import HttpNotFoundError
+from src.errors.types.http_bad_request import HttpBadRequestError
 
 class LoginCreator:
     def __init__(self, user_repository: UserRepositoryInterface)-> None:
@@ -19,14 +21,14 @@ class LoginCreator:
 
     def __find_user(self, username: str) -> tuple[int, str, str]:
         user = self.__user_repository.get_user_by_username(username)
-        if not user: raise Exception("User not found")
+        if not user: raise HttpNotFoundError("User not found")
 
         return user
     
     def __verify_correct_password(self, password: str, hashed_password: str) -> None:
-        is_passowrd_correct = self.__password_Handler.check_password(password, hashed_password)
+        is_password_correct = self.__password_Handler.check_password(password, hashed_password)
 
-        if not is_passowrd_correct: raise Exception("wrong password")
+        if not is_password_correct: raise HttpBadRequestError("wrong password")
 
     def __create_jtw_token(self,user_id: int) -> str:
         payload = {"user_id": user_id}
